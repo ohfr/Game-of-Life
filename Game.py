@@ -1,9 +1,10 @@
 import pygame, sys
 from Grid import Grid
+import time
 
 dead_color = 0,0,0
 alive_color = 255, 255, 255
-board_size = WIDTH, HEIGHT = 900, 900
+board_size = WIDTH, HEIGHT = 625,900
 class Game:
 
     def __init__(self):
@@ -12,7 +13,7 @@ class Game:
         self.grid = Grid()
         self.oldGrid = Grid()
         self.clear_screen()
-        
+
     def clear_screen(self):
         self.screen.fill(dead_color)
 
@@ -23,18 +24,52 @@ class Game:
                     pygame.draw.rect(self.screen, alive_color,[(5 + 20) * j + 5,
                               (5 + 20) * i + 5,20,20])
                     pygame.display.flip()
-                # else:
-                #     pygame.draw.rect(self.screen, dead_color,[(5 + 20) * j + 5,
-                #               (5 + 20) * i + 5,20,20], 0)
+                else:
+                    pygame.draw.rect(self.screen, alive_color,[(5 + 20) * j + 5,
+                              (5 + 20) * i + 5,20,20], 1)
+                    pygame.display.flip()
     def update_gen(self):
         # inspect current active gen
         # update inactive grid and store next gen
         # swap out active grid
-        pass
+        leng = len(self.grid.grid)
+        for row in range(leng):
+            for col in range(leng):
+                if row == 0 or col == 0 or row == leng-1 or col == leng-1:
+                    self.oldGrid.grid[row][col].state = self.grid.grid[row][col].state
+                    break
+                neighbors = self.grid.countNeighbors(row, col)
+                state = self.grid.grid[row][col].state
+
+                if state == 0 and neighbors == 3:
+                    self.oldGrid.grid[row][col].state = 1
+                elif state == 1 and (neighbors < 2 or neighbors > 3):
+                    self.oldGrid.grid[row][col].state = 0
+                else:
+                    self.oldGrid.grid[row][col].state = self.grid.grid[row][col].state
+        self.grid.grid = self.oldGrid.grid
+        pygame.display.flip()
+
+                
+                
 
     def handle_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT: sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                col = pos[0] // 25
+                row = pos[1] // 25
+
+                try:
+                    self.grid.grid[row][col].state = 1
+                except:
+                    print("Must not be clicking on this cheif, maybe put buttons here")
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q:
+                    break
+                if event.key == pygame.K_s:
+                    self.update_gen()
 
     def run(self):
         self.clear_screen()
@@ -46,6 +81,7 @@ class Game:
         while True:
             self.handle_events()
             self.fill_grid()
+            pygame.display.flip()
 
 
 
