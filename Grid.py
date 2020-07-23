@@ -23,13 +23,15 @@ class Grid:
         for i in range(rows):
             self.grid.append([])
             for col in range (cols):
-                cell = Cell()
-                self.grid[i].append(cell)
+                self.grid[i].append(0)
 
     def countNeighbors(self, x, y):
         sum = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
-                sum += self.grid[i+x][j+y].state
-        sum -= self.grid[x][y].state
+                sum += self.grid[i+x][j+y]
+        sum -= self.grid[x][y]
         return sum
+
+    def clearGrid(self):
+        self.grid = []

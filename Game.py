@@ -20,7 +20,7 @@ class Game:
     def fill_grid(self):
         for i in range((len(self.grid.grid))):
             for j in range(len(self.grid.grid)):
-                if self.grid.grid[i][j].state == 1:
+                if self.grid.grid[i][j] == 1:
                     pygame.draw.rect(self.screen, alive_color,[(5 + 20) * j + 5,
                               (5 + 20) * i + 5,20,20])
                     pygame.display.flip()
@@ -35,20 +35,19 @@ class Game:
         leng = len(self.grid.grid)
         for row in range(leng):
             for col in range(leng):
-                if row == 0 or col == 0 or row == leng-1 or col == leng-1:
-                    self.oldGrid.grid[row][col].state = self.grid.grid[row][col].state
-                    break
-                neighbors = self.grid.countNeighbors(row, col)
-                state = self.grid.grid[row][col].state
+                state = self.grid.grid[row][col]
 
-                if state == 0 and neighbors == 3:
-                    self.oldGrid.grid[row][col].state = 1
-                elif state == 1 and (neighbors < 2 or neighbors > 3):
-                    self.oldGrid.grid[row][col].state = 0
+                if row == 0 or col == 0 or row == leng-1 or col == leng-1:
+                    self.oldGrid.grid[row][col] = state
                 else:
-                    self.oldGrid.grid[row][col].state = self.grid.grid[row][col].state
+                    neighbors = self.grid.countNeighbors(row, col)
+                    if state == 0 and neighbors == 3:
+                        self.oldGrid.grid[row][col] = 1
+                    elif state == 1 and (neighbors < 2 or neighbors > 3):
+                        self.oldGrid.grid[row][col] = 0
+                    else:
+                        self.oldGrid.grid[row][col] = state
         self.grid.grid = self.oldGrid.grid
-        pygame.display.flip()
 
                 
                 
@@ -62,7 +61,7 @@ class Game:
                 row = pos[1] // 25
 
                 try:
-                    self.grid.grid[row][col].state = 1
+                    self.grid.grid[row][col] = 1
                 except:
                     print("Must not be clicking on this cheif, maybe put buttons here")
             elif event.type == pygame.KEYDOWN:
@@ -70,6 +69,13 @@ class Game:
                     break
                 if event.key == pygame.K_s:
                     self.update_gen()
+                    break
+                if event.key == pygame.K_c:
+                    self.clear_screen()
+                    self.grid.clearGrid()
+                    self.grid.create_cells()
+                    self.oldGrid.grid = self.grid.grid
+
 
     def run(self):
         self.clear_screen()
