@@ -15,39 +15,47 @@ class Game:
         self.clear_screen()
 
     def clear_screen(self):
-        self.screen.fill(dead_color)
+        self.screen.fill(alive_color)
 
     def fill_grid(self):
         for i in range((len(self.grid.grid))):
             for j in range(len(self.grid.grid)):
                 if self.grid.grid[i][j] == 1:
-                    pygame.draw.rect(self.screen, alive_color,[(5 + 20) * j + 5,
-                              (5 + 20) * i + 5,20,20])
-                    pygame.display.flip()
+                    pygame.draw.rect(self.screen, dead_color,[(5 + 20) * j + 5,(5 + 20) * i + 5,20,20])
                 else:
-                    pygame.draw.rect(self.screen, alive_color,[(5 + 20) * j + 5,
-                              (5 + 20) * i + 5,20,20], 1)
-                    pygame.display.flip()
+                    pygame.draw.rect(self.screen, dead_color,[(5 + 20) * j + 5,(5 + 20) * i + 5,20,20], 1)
+                pygame.display.flip()
     def update_gen(self):
         # inspect current active gen
         # update inactive grid and store next gen
         # swap out active grid
         leng = len(self.grid.grid)
+
+        temp = self.grid.grid
+
         for row in range(leng):
             for col in range(leng):
                 state = self.grid.grid[row][col]
 
                 if row == 0 or col == 0 or row == leng-1 or col == leng-1:
-                    self.oldGrid.grid[row][col] = state
+                    continue
                 else:
-                    neighbors = self.grid.countNeighbors(row, col)
+                    neighbors = self.countNeighbors(self.grid.grid,row, col)
                     if state == 0 and neighbors == 3:
-                        self.oldGrid.grid[row][col] = 1
+                        temp[row][col] = 1
                     elif state == 1 and (neighbors < 2 or neighbors > 3):
-                        self.oldGrid.grid[row][col] = 0
-                    else:
-                        self.oldGrid.grid[row][col] = state
-        self.grid.grid = self.oldGrid.grid
+                        print(neighbors)
+                        temp[row][col] = 0
+
+        self.grid.grid = temp
+
+    def countNeighbors(self,grid, x, y):
+        sum = 0
+        for i in range(-1, 2):
+            for j in range(-1, 2):
+                sum += grid[x+i][y+j]
+        sum -= grid[x][y]
+        return sum
 
                 
                 
@@ -80,7 +88,8 @@ class Game:
     def run(self):
         self.clear_screen()
         self.grid.create_cells()
-        self.oldGrid.grid = self.grid.grid
+        temp = self.grid.grid
+        self.oldGrid.grid = temp
         pygame.display.flip()
         # self.create_grid()
 

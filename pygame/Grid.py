@@ -29,7 +29,7 @@ class Grid:
         sum = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
-                sum += self.grid[i+x][j+y]
+                sum += self.grid[x+i][y+j]
         sum -= self.grid[x][y]
         return sum
 
