@@ -1,5 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { produce } from "immer";
+import { useOnClickOutside } from './utils/useBtn';
+import { getNeighbors } from './utils/getNeighbors';
+import { galaxyGrid } from './utils/galaxyGrid';
 
 function App() {
 
@@ -7,19 +10,10 @@ function App() {
   const [rows, setRows] = useState(25);
   const [cols, setCols] = useState(25);
 
+  const [showRules, setShowRules] = useState(false);
+
   const [speed, setSpeed] = useState(100);
-
-  const initializeGrid = () => {
-    const row = [];
-    for (let i =0;i < rows;i++) {
-      row.push(Array.from(Array(cols), () => 0));
-    }
-    return row;
-  }
-
-  const [grid, setGrid] = useState(() => {
-    return initializeGrid();
-  });
+  
   const [running, setRunning] = useState(false);
 
   const runningRef = useRef(running);
@@ -37,20 +31,22 @@ function App() {
   const colRef = useRef(cols);
   colRef.current = cols;
 
-  const getNeighbors = (grid, x, y) => {
-    let sum=0;
-    for (let i =-1;i < 2;i++) {
-      for (let j=-1;j < 2;j++) {
-        let xi=x+i;
-        let yj = y+j;
-        if (xi >= 0 && xi < rowRef.current && yj >= 0 && yj < colRef.current) {
-          sum += grid[i+x][j+y];
-        }
-      }
+
+  const node = useRef();
+
+  useOnClickOutside(node, () => setShowRules(false));
+
+  const initializeGrid = () => {
+    const row = [];
+    for (let i =0;i < rows;i++) {
+      row.push(Array.from(Array(cols), () => 0));
     }
-    sum -= grid[x][y];
-    return sum;
+    return row;
   }
+
+  const [grid, setGrid] = useState(() => {
+    return initializeGrid();
+  });
 
   const step = () => {
     setGrid(cur => {
@@ -58,7 +54,7 @@ function App() {
         for (let i =0; i < rowRef.current;i++) {
           for (let j=0; j < colRef.current;j++) {
             let state = cur[i][j];
-            let neighbors = getNeighbors(cur, i, j);
+            let neighbors = getNeighbors(cur, i, j, rowRef.current, colRef.current);
 
             if (state === 1 && (neighbors < 2 || neighbors > 3)) {
               gridCopy[i][j] = 0;
@@ -95,43 +91,21 @@ function App() {
     return row;
   }
 
-  const galaxyGrid = (gridCopy, mid, midCol) => {
-    for (let i= 0;i <6;i++) {
-      gridCopy[mid][midCol] = 1;
-      gridCopy[mid+1][midCol] = 1;
-      midCol++;
-      if (i === 5) {
-        midCol++;
-      }
-    }
-    for (let i=0;i < 6;i++) {
-      gridCopy[mid][midCol] = 1;
-      gridCopy[mid][midCol+1] = 1
-      mid++;
-      if (i === 5) {
-        mid++;
-        midCol++;
-      }
-    }
-    for (let i=0;i < 6;i++) {
-      gridCopy[mid][midCol] = 1;
-      gridCopy[mid+1][midCol] = 1
-      midCol--;
-      if (i === 5) {
-        midCol--;
-        mid++;
-      }
-    }
-
-    for (let i=0; i <6;i++) {
-      gridCopy[mid][midCol] = 1;
-      gridCopy[mid][midCol-1] = 1
-      mid--;
-    }
-  }
 
   return (
-    <div style={{ display: 'flex', flexFlow: 'column wrap', alignContent: 'center', justifyContent: 'center', marginTop: '50px'}}>
+    <>
+    <button style={{ margin: '20px 20px 0 20px'}} onClick={() => setShowRules(!showRules)}>Rules</button>
+    {showRules && (
+      <div style={{margin: '40px',position: 'fixed', zIndex: 1, width: '40%'}} ref={node}>
+        <div style={{ position: 'absolute', background: 'gray', padding: '20px'}}>
+        <span></span>
+        <h2 style={{color: 'white'}}> Rules for Conway's Game of Life</h2>
+        <p style={{color: 'white'}}>Any live cell with less than 2 or more than 3 live neighbors dies</p>
+        <p style={{color: 'white'}}>Any dead cell with exactly 3 live neighbors becomes a live cell</p>
+        </div>
+      </div>
+    )}
+    <div style={{ display: 'flex', flexFlow: 'column wrap', alignContent: 'center', justifyContent: 'center', marginTop: '10px'}}>
     <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 20px)`}}>
     {grid.map((row, i) => row.map((col, j) => {
       return <div key={i+j}
@@ -244,6 +218,7 @@ function App() {
       });
     }}>Kok's Galaxy</button>
     </div>
+    </>
   );
 }
 
