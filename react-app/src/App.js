@@ -72,6 +72,7 @@ function App() {
     colRef.current = cols
 
     setGrid(initializeGrid());
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows, cols])
 
   const run = useCallback(() => {
